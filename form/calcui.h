@@ -20,6 +20,8 @@
 #include <wx/image.h>
 #include <wx/icon.h>
 #include <wx/tglbtn.h>
+#include <wx/stattext.h>
+#include <wx/choice.h>
 #include <wx/sizer.h>
 #include <wx/frame.h>
 
@@ -42,8 +44,16 @@ class MainFrame : public wxFrame
 		wxButton* m_ToggleDrawer;
 		wxBoxSizer* m_DrawerLayout;
 		wxToggleButton* m_ToggleTop;
+		wxStaticText* m_staticText1;
+		wxChoice* m_EvaluatorChoice;
 		wxButton* m_About;
 		wxTextCtrl* m_Result;
+
+		// Virtual event handlers, override them in your derived class
+		virtual void m_ExecuteButtonOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_ClearResultOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_ToggleDrawerOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
+
 
 	public:
 
