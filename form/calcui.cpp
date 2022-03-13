@@ -81,6 +81,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	m_ExecuteButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ExecuteButtonOnButtonClick ), NULL, this );
 	m_ClearResult->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ClearResultOnButtonClick ), NULL, this );
 	m_ToggleDrawer->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ToggleDrawerOnButtonClick ), NULL, this );
+    m_ExprInput->Connect( wxEVT_TEXT_ENTER, wxCommandEventHandler( MainFrame::m_ExprInputOnTextEnter ), NULL, this );
 }
 
 MainFrame::~MainFrame()
@@ -89,5 +90,6 @@ MainFrame::~MainFrame()
 	m_ExecuteButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ExecuteButtonOnButtonClick ), NULL, this );
 	m_ClearResult->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ClearResultOnButtonClick ), NULL, this );
 	m_ToggleDrawer->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ToggleDrawerOnButtonClick ), NULL, this );
+    m_ExprInput->Disconnect( wxEVT_TEXT_ENTER, wxCommandEventHandler( MainFrame::m_ExprInputOnTextEnter ), NULL, this );
 
 }

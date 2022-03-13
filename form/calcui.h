@@ -53,6 +53,7 @@ class MainFrame : public wxFrame
 		virtual void m_ExecuteButtonOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ClearResultOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ToggleDrawerOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
+        virtual void m_ExprInputOnTextEnter( wxCommandEvent& event ) { event.Skip(); }
 
 
 	public:
