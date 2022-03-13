@@ -17,6 +17,7 @@ target('gui-calc')
   add_deps('lua')
   if is_plat('windows') then
     add_packages('wx','libpng','zlib')
+    add_cxflags('/bigobj')
     add_links('uuid','gdi32','comdlg32','comctl32','ws2_32','user32','winspool','ole32','rpcrt4','advapi32','shell32')
   elseif is_plat('linux') then
     add_defines('__WXGTK__')

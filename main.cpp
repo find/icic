@@ -20,30 +20,57 @@ class RealMainFrame: public MainFrame
 public:
   RealMainFrame(): MainFrame(nullptr) {
     m_Symbols.add_constants();
+    toggleHistory();
   }
-  void m_ToggleDrawerOnButtonClick(wxCommandEvent& evt) override {
+
+  void toggleHistory() {
     m_DrawerShown = !m_DrawerShown;
-    m_InputLineLayout->Show(m_DrawerLayout, m_DrawerShown);
-    m_InputLineLayout->Layout();
-    if (m_DrawerShown)
-      m_ToggleDrawer->SetLabel(wxT(">"));
-    else
-      m_ToggleDrawer->SetLabel(wxT("<"));
+    m_ResultSizer->Show(m_HistoryList, m_DrawerShown);
+    m_ToggleHistory->SetLabel(m_DrawerShown?">":"<");
+    m_ResultSizer->Layout();
   }
-  void m_ClearResultOnButtonClick(wxCommandEvent& evt) {
+  void m_ToggleHistoryOnButtonClick(wxCommandEvent& evt) override {
+    toggleHistory();
+  }
+
+  void m_ClearResultOnButtonClick(wxCommandEvent& evt) override {
+    clearResult();
+  }
+  void m_ClearOnMenuSelection(wxCommandEvent& evt) override {
+    clearResult();
+  }
+  void clearResult() {
     m_ExprInput->SetValue(wxT(""));
     m_Result->SetValue(wxT(""));
     m_ResultString = "";
   }
+
+  void m_HistoryListOnListBoxDClick(wxCommandEvent& evt) override {
+    auto sel = m_HistoryList->GetSelection();
+    if (sel != wxNOT_FOUND) {
+      m_ExprInput->SetValue(m_HistoryList->GetString(sel));
+    }
+  }
+  void m_ClearHistoryOnMenuSelection(wxCommandEvent& evt) override {
+    m_HistoryList->Clear();
+  }
+
+  void m_NewWindowOnMenuSelection(wxCommandEvent& evt) override {
+    (new RealMainFrame())->Show(true);
+  }
+  void m_CloseWindowOnMenuSelection(wxCommandEvent& evt) override {
+    this->Close();
+  }
+
   void m_ExecuteButtonOnButtonClick(wxCommandEvent& evt) override {
     evalExpr();
   }
   void m_ExprInputOnTextEnter( wxCommandEvent& evt) override {
     evalExpr();
   }
-
   void evalExpr() {
-    auto exprstr = m_ExprInput->GetValue().ToStdString();
+    auto wxexprstr = m_ExprInput->GetValue();
+    auto exprstr = wxexprstr.ToStdString();
     if (exprstr=="")
       return;
 
@@ -56,6 +83,7 @@ public:
       m_ResultString = "-------------------------------\n" + m_ResultString; 
     m_ResultString = exprstr + " = " + res + "\n" + m_ResultString;
     m_Result->SetValue(m_ResultString);
+    m_HistoryList->InsertItems(1, &wxexprstr, 0);
   }
 };
 
@@ -67,8 +95,6 @@ public:
     if (!wxApp::OnInit())
       return false;
     auto *Frame = new RealMainFrame();
-    wxCommandEvent evt;
-    Frame->m_ToggleDrawerOnButtonClick(evt);
     Frame->Show(true);
     return true;
   }

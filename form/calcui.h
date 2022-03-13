@@ -19,15 +19,13 @@
 #include <wx/bitmap.h>
 #include <wx/image.h>
 #include <wx/icon.h>
-#include <wx/tglbtn.h>
-#include <wx/stattext.h>
-#include <wx/choice.h>
 #include <wx/sizer.h>
+#include <wx/listbox.h>
+#include <wx/menu.h>
 #include <wx/frame.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define ID_ToggleDrawer 1000
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class MainFrame
@@ -37,23 +35,34 @@ class MainFrame : public wxFrame
 	private:
 
 	protected:
+		wxFlexGridSizer* m_MainLayout;
 		wxBoxSizer* m_InputLineLayout;
 		wxTextCtrl* m_ExprInput;
 		wxButton* m_ExecuteButton;
 		wxButton* m_ClearResult;
-		wxButton* m_ToggleDrawer;
-		wxBoxSizer* m_DrawerLayout;
-		wxToggleButton* m_ToggleTop;
-		wxStaticText* m_staticText1;
-		wxChoice* m_EvaluatorChoice;
-		wxButton* m_About;
+		wxBoxSizer* m_ResultSizer;
 		wxTextCtrl* m_Result;
+		wxButton* m_ToggleHistory;
+		wxListBox* m_HistoryList;
+		wxMenuBar* m_MainMenuBar;
+		wxMenu* m_Window;
+		wxMenuItem* m_StayOnTop;
+		wxMenu* m_EditMenu;
+		wxMenu* m_EvalEngine;
+		wxMenuItem* m_EngineExprtk;
+		wxMenuItem* m_EngineLua;
+		wxMenu* m_HelpMenu;
 
 		// Virtual event handlers, override them in your derived class
+		virtual void m_ExprInputOnTextEnter( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ExecuteButtonOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ClearResultOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
-		virtual void m_ToggleDrawerOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
-        virtual void m_ExprInputOnTextEnter( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_ToggleHistoryOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_HistoryListOnListBoxDClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_NewWindowOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_CloseWindowOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_ClearOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_ClearHistoryOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 
 
 	public:
