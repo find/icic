@@ -23,6 +23,8 @@
 #include <wx/listbox.h>
 #include <wx/menu.h>
 #include <wx/frame.h>
+#include <wx/stattext.h>
+#include <wx/dialog.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -54,15 +56,19 @@ class MainFrame : public wxFrame
 		wxMenu* m_HelpMenu;
 
 		// Virtual event handlers, override them in your derived class
-		virtual void m_ExprInputOnTextEnter( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ExecuteButtonOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ClearResultOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ToggleHistoryOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_HistoryListOnListBoxDClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_MenuToggleHistoryOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_NewWindowOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_CloseWindowOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_EngineExprtkOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_EngineLuaOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_MenuEvalOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ClearOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ClearHistoryOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_AboutOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 
 
 	public:
@@ -70,6 +76,23 @@ class MainFrame : public wxFrame
 		MainFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Caculator"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 622,301 ), long style = wxDEFAULT_FRAME_STYLE|wxSYSTEM_MENU|wxTAB_TRAVERSAL, const wxString& name = wxT("Calculator") );
 
 		~MainFrame();
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class AboutDialog
+///////////////////////////////////////////////////////////////////////////////
+class AboutDialog : public wxDialog
+{
+	private:
+
+	protected:
+
+	public:
+
+		AboutDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("About"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 354,191 ), long style = wxDEFAULT_DIALOG_STYLE );
+
+		~AboutDialog();
 
 };
 

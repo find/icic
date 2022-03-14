@@ -1,11 +1,22 @@
 #include "wx/wx.h"
 #include "form/calcui.h"
 
+extern "C" {
 #include "lua.h"
 #include "lualib.h"
+#include "lauxlib.h"
+}
 #include "exprtk.hpp"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 using Real = double;
+
+static void* _myLuaAlloc(void*, void* ptr, size_t osize, size_t nsize)
+{
+  return realloc(ptr, nsize);
+}
 
 class RealMainFrame: public MainFrame
 {
@@ -13,14 +24,28 @@ class RealMainFrame: public MainFrame
   using symtable_t = exprtk::symbol_table<Real>;
   using expr_t = exprtk::expression<Real>;
 
-  bool m_DrawerShown = true;
-  symtable_t m_Symbols;
-  std::string m_ResultString;
+  enum class EvaluationEngine {
+    Exprtk,
+    Lua
+  };
+
+  bool             m_DrawerShown = true;
+  symtable_t       m_Symbols;
+  std::string      m_ResultString;
+  wxString         m_PreviousExpr = "";
+  EvaluationEngine m_Engine = EvaluationEngine::Exprtk;
+  lua_State*       L = nullptr;
 
 public:
   RealMainFrame(): MainFrame(nullptr) {
     m_Symbols.add_constants();
     toggleHistory();
+    L = lua_newstate(_myLuaAlloc, nullptr);
+    luaL_openlibs(L);
+    luaL_dostring(L, "for i,v in pairs(math) do _G[i]=v end");
+  }
+  ~RealMainFrame() {
+    lua_close(L);
   }
 
   void toggleHistory() {
@@ -31,6 +56,16 @@ public:
   }
   void m_ToggleHistoryOnButtonClick(wxCommandEvent& evt) override {
     toggleHistory();
+  }
+  void m_MenuToggleHistoryOnMenuSelection(wxCommandEvent& evt) override {
+    toggleHistory();
+  }
+
+  void m_EngineLuaOnMenuSelection(wxCommandEvent& evt) override {
+    m_Engine = EvaluationEngine::Lua;
+  }
+  void m_EngineExprtkOnMenuSelection(wxCommandEvent& evt) override {
+    m_Engine = EvaluationEngine::Exprtk;
   }
 
   void m_ClearResultOnButtonClick(wxCommandEvent& evt) override {
@@ -53,6 +88,10 @@ public:
   }
   void m_ClearHistoryOnMenuSelection(wxCommandEvent& evt) override {
     m_HistoryList->Clear();
+    lua_close(L);
+    L = lua_newstate(_myLuaAlloc, nullptr);
+    luaL_openlibs(L);
+    luaL_dostring(L, "for i,v in pairs(math) do _G[i]=v end");
   }
 
   void m_NewWindowOnMenuSelection(wxCommandEvent& evt) override {
@@ -61,11 +100,14 @@ public:
   void m_CloseWindowOnMenuSelection(wxCommandEvent& evt) override {
     this->Close();
   }
+  void m_AboutOnMenuSelection(wxCommandEvent& evt) override {
+    (new AboutDialog(this))->Show(true);
+  }
 
   void m_ExecuteButtonOnButtonClick(wxCommandEvent& evt) override {
     evalExpr();
   }
-  void m_ExprInputOnTextEnter( wxCommandEvent& evt) override {
+  void m_MenuEvalOnMenuSelection(wxCommandEvent& evt) override {
     evalExpr();
   }
   void evalExpr() {
@@ -74,16 +116,56 @@ public:
     if (exprstr=="")
       return;
 
+    std::string res;
+    if (m_Engine == EvaluationEngine::Exprtk)
+      res = evalExprtk(exprstr);
+    else
+      res = evalLua(exprstr);
+
+    if (!m_ResultString.empty())
+      m_ResultString = "----------------------------------------\n" + m_ResultString; 
+    m_ResultString = res + "\n" + m_ResultString;
+    m_Result->SetValue(m_ResultString);
+    if (wxexprstr != m_PreviousExpr)
+      m_HistoryList->InsertItems(1, &wxexprstr, 0);
+    m_PreviousExpr = std::move(wxexprstr);
+  }
+  std::string evalExprtk(std::string const& input)
+  {
     expr_t expr;
     expr.register_symbol_table(m_Symbols);
     parser_t parser;
-    parser.compile(exprstr, expr);
-    auto res = std::to_string(expr.value());
-    if (!m_ResultString.empty())
-      m_ResultString = "-------------------------------\n" + m_ResultString; 
-    m_ResultString = exprstr + " = " + res + "\n" + m_ResultString;
-    m_Result->SetValue(m_ResultString);
-    m_HistoryList->InsertItems(1, &wxexprstr, 0);
+    parser.compile(input, expr);
+    return input + " = " + std::to_string(expr.value());
+  }
+  std::string evalLua(std::string const& input)
+  {
+    std::string out;
+    //luaL_dostring(L, input.c_str());
+    std::string addReturn = "return " + input;
+    auto status = luaL_loadbuffer(L, addReturn.c_str(), addReturn.size(), "=input");
+    if (status == LUA_ERRSYNTAX) {
+      lua_pop(L, 1);
+      status = luaL_loadbuffer(L, input.c_str(), input.size(), "=input");
+    }
+    if (status == LUA_OK)
+      status = lua_pcall(L, 0, LUA_MULTRET, 0);
+    if (status != LUA_OK)
+      out += "ERROR\n";
+    for (int i=1, n=lua_gettop(L); i<=n; ++i) {
+      size_t slen = 0;
+      char const* s = lua_tolstring(L, i, &slen);
+      if (i>1)
+        out+="\t";
+      out+=std::string(s, s+slen);
+    }
+    lua_pop(L, lua_gettop(L));
+    static const std::string iprompt1 = "lua> ";
+    static const std::string iprompt2 = "------ lua code ------\n";
+    static const std::string oprompt1 = "\n---> ";
+    static const std::string oprompt2 = "\n------ returns ------ \n";
+    return (input.find('\n')==std::string::npos?iprompt1:iprompt2) + input +
+           (  out.find('\n')==std::string::npos?oprompt1:oprompt2) + out;
   }
 };
 
