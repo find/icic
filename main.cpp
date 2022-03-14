@@ -40,12 +40,25 @@ public:
   RealMainFrame(): MainFrame(nullptr) {
     m_Symbols.add_constants();
     toggleHistory();
-    L = lua_newstate(_myLuaAlloc, nullptr);
-    luaL_openlibs(L);
-    luaL_dostring(L, "for i,v in pairs(math) do _G[i]=v end");
+    initLua();
   }
   ~RealMainFrame() {
     lua_close(L);
+  }
+  void initLua() {
+    if (L)
+      lua_close(L);
+    L = lua_newstate(_myLuaAlloc, nullptr);
+    luaL_openlibs(L);
+    luaL_dostring(L, R"(
+for i,v in pairs(math) do _G[i]=v end
+__printbuf = ''
+print = function(...)
+  local n=select('#',...)
+  for i=1,n do
+    __printbuf = __printbuf .. tostring(select(i,...)) .. (i<n and '\t' or '\n')
+  end
+end)");
   }
 
   void toggleHistory() {
@@ -88,10 +101,7 @@ public:
   }
   void m_ClearHistoryOnMenuSelection(wxCommandEvent& evt) override {
     m_HistoryList->Clear();
-    lua_close(L);
-    L = lua_newstate(_myLuaAlloc, nullptr);
-    luaL_openlibs(L);
-    luaL_dostring(L, "for i,v in pairs(math) do _G[i]=v end");
+    initLua();
   }
 
   void m_NewWindowOnMenuSelection(wxCommandEvent& evt) override {
@@ -148,10 +158,21 @@ public:
       lua_pop(L, 1);
       status = luaL_loadbuffer(L, input.c_str(), input.size(), "=input");
     }
-    if (status == LUA_OK)
+    if (status == LUA_OK) {
+      lua_pushglobaltable(L);
+      lua_pushliteral(L, "");
+      lua_setfield(L, -2, "__printbuf");
+      lua_pop(L,1);
       status = lua_pcall(L, 0, LUA_MULTRET, 0);
+    }
     if (status != LUA_OK)
       out += "ERROR\n";
+    size_t printed_len = 0;
+    char const*  printed_txt = nullptr;
+    lua_pushglobaltable(L);
+    lua_getfield(L, -1, "__printbuf");
+    printed_txt = lua_tolstring(L, -1, &printed_len);
+    lua_pop(L, 1);
     for (int i=1, n=lua_gettop(L); i<=n; ++i) {
       size_t slen = 0;
       char const* s = lua_tolstring(L, i, &slen);
@@ -164,7 +185,11 @@ public:
     static const std::string iprompt2 = "------ lua code ------\n";
     static const std::string oprompt1 = "\n---> ";
     static const std::string oprompt2 = "\n------ returns ------ \n";
+    std::string prt = "";
+    if (printed_len>0)
+      prt = "\n------ prints ------\n" + std::string(printed_txt, printed_txt+printed_len); 
     return (input.find('\n')==std::string::npos?iprompt1:iprompt2) + input +
+           prt +
            (  out.find('\n')==std::string::npos?oprompt1:oprompt2) + out;
   }
 };
