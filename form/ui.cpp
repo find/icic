@@ -76,12 +76,12 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	m_EditMenu = new wxMenu();
 	m_EvalEngine = new wxMenu();
 	wxMenuItem* m_EvalEngineItem = new wxMenuItem( m_EditMenu, wxID_ANY, wxT("En&gine"), wxEmptyString, wxITEM_NORMAL, m_EvalEngine );
-	m_EngineExprtk = new wxMenuItem( m_EvalEngine, wxID_ANY, wxString( wxT("&exprtk") ) + wxT('\t') + wxT("Alt+Shift+E"), wxEmptyString, wxITEM_RADIO );
-	m_EvalEngine->Append( m_EngineExprtk );
-	m_EngineExprtk->Check( true );
-
 	m_EngineLua = new wxMenuItem( m_EvalEngine, wxID_ANY, wxString( wxT("&Lua") ) + wxT('\t') + wxT("Alt+Shift+L"), wxEmptyString, wxITEM_RADIO );
 	m_EvalEngine->Append( m_EngineLua );
+	m_EngineLua->Check( true );
+
+	m_EngineExprtk = new wxMenuItem( m_EvalEngine, wxID_ANY, wxString( wxT("&exprtk") ) + wxT('\t') + wxT("Alt+Shift+E"), wxEmptyString, wxITEM_RADIO );
+	m_EvalEngine->Append( m_EngineExprtk );
 
 	m_EditMenu->Append( m_EvalEngineItem );
 
@@ -94,7 +94,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	m_EditMenu->Append( m_Clear );
 
 	wxMenuItem* m_ClearHistory;
-	m_ClearHistory = new wxMenuItem( m_EditMenu, wxID_ANY, wxString( wxT("Clear &History") ) + wxT('\t') + wxT("Ctrl+D"), wxEmptyString, wxITEM_NORMAL );
+	m_ClearHistory = new wxMenuItem( m_EditMenu, wxID_ANY, wxString( wxT("Clear &History") ) + wxT('\t') + wxT("Ctrl+Alt+L"), wxEmptyString, wxITEM_NORMAL );
 	m_EditMenu->Append( m_ClearHistory );
 
 	m_MainMenuBar->Append( m_EditMenu, wxT("&Edit") );
@@ -114,14 +114,15 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	// Connect Events
 	m_ExecuteButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ExecuteButtonOnButtonClick ), NULL, this );
 	m_ClearResult->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ClearResultOnButtonClick ), NULL, this );
+	m_Result->Connect( wxEVT_CHAR, wxKeyEventHandler( MainFrame::m_ResultOnChar ), NULL, this );
 	m_ToggleHistory->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ToggleHistoryOnButtonClick ), NULL, this );
 	m_HistoryList->Connect( wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, wxCommandEventHandler( MainFrame::m_HistoryListOnListBoxDClick ), NULL, this );
 	m_Window->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_StayOnTopOnMenuSelection ), this, m_StayOnTop->GetId());
 	m_Window->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_MenuToggleHistoryOnMenuSelection ), this, m_MenuToggleHistory->GetId());
 	m_Window->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_NewWindowOnMenuSelection ), this, m_NewWindow->GetId());
 	m_Window->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_CloseWindowOnMenuSelection ), this, m_CloseWindow->GetId());
-	m_EvalEngine->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_EngineExprtkOnMenuSelection ), this, m_EngineExprtk->GetId());
 	m_EvalEngine->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_EngineLuaOnMenuSelection ), this, m_EngineLua->GetId());
+	m_EvalEngine->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_EngineExprtkOnMenuSelection ), this, m_EngineExprtk->GetId());
 	m_EditMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_MenuEvalOnMenuSelection ), this, m_MenuEval->GetId());
 	m_EditMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_ClearOnMenuSelection ), this, m_Clear->GetId());
 	m_EditMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_ClearHistoryOnMenuSelection ), this, m_ClearHistory->GetId());
@@ -133,6 +134,7 @@ MainFrame::~MainFrame()
 	// Disconnect Events
 	m_ExecuteButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ExecuteButtonOnButtonClick ), NULL, this );
 	m_ClearResult->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ClearResultOnButtonClick ), NULL, this );
+	m_Result->Disconnect( wxEVT_CHAR, wxKeyEventHandler( MainFrame::m_ResultOnChar ), NULL, this );
 	m_ToggleHistory->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ToggleHistoryOnButtonClick ), NULL, this );
 	m_HistoryList->Disconnect( wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, wxCommandEventHandler( MainFrame::m_HistoryListOnListBoxDClick ), NULL, this );
 

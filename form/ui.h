@@ -51,21 +51,22 @@ class MainFrame : public wxFrame
 		wxMenuItem* m_StayOnTop;
 		wxMenu* m_EditMenu;
 		wxMenu* m_EvalEngine;
-		wxMenuItem* m_EngineExprtk;
 		wxMenuItem* m_EngineLua;
+		wxMenuItem* m_EngineExprtk;
 		wxMenu* m_HelpMenu;
 
 		// Virtual event handlers, override them in your derived class
 		virtual void m_ExecuteButtonOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ClearResultOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_ResultOnChar( wxKeyEvent& event ) { event.Skip(); }
 		virtual void m_ToggleHistoryOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_HistoryListOnListBoxDClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_StayOnTopOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_MenuToggleHistoryOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_NewWindowOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_CloseWindowOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
-		virtual void m_EngineExprtkOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_EngineLuaOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_EngineExprtkOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_MenuEvalOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ClearOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ClearHistoryOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }

@@ -9,13 +9,16 @@ target('lua')
   add_includedirs('lua')
   add_files('lua/*.c')
 
-target('gui-calc')
+target('iiic')
   set_kind('binary')
+  set_optimize('minimal')
   add_files('form/ui.cpp')
   add_files('main.cpp')
   add_includedirs('lua')
   add_deps('lua')
   if is_plat('windows') then
+    add_files('iiic.rc')
+    add_rules("win.sdk.application")
     add_packages('wx','libpng','zlib')
     add_cxflags('/bigobj')
     add_links('uuid','gdi32','comdlg32','comctl32','ws2_32','user32','winspool','ole32','rpcrt4','advapi32','shell32')
@@ -24,6 +27,9 @@ target('gui-calc')
     add_includedirs('/usr/include/wx-3.0')
     add_includedirs('/usr/lib64/wx/include/gtk3-unicode-3.0')
     add_links('wx_gtk3u_core-3.0','wx_gtk3u_adv-3.0','wx_baseu-3.0','png','z')
+  elseif is_plat('msys') or is_subhost('msys') then
+    add_ldflags('-static')
+    add_ldflags('-Wl,--subsystem,windows')
   end
   --add_defines('UNICODE','_UNICODE','NDEBUG','wxMONOLITHIC=1','wxNO_GL_LIB=1')
 

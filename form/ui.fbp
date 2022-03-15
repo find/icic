@@ -363,6 +363,7 @@
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
                                 <property name="window_style"></property>
+                                <event name="OnChar">m_ResultOnChar</event>
                             </object>
                         </object>
                         <object class="sizeritem" expanded="1">
@@ -604,12 +605,12 @@
                             <property name="help"></property>
                             <property name="id">wxID_ANY</property>
                             <property name="kind">wxITEM_RADIO</property>
-                            <property name="label">&amp;exprtk</property>
-                            <property name="name">m_EngineExprtk</property>
+                            <property name="label">&amp;Lua</property>
+                            <property name="name">m_EngineLua</property>
                             <property name="permission">protected</property>
-                            <property name="shortcut">Alt+Shift+E</property>
+                            <property name="shortcut">Alt+Shift+L</property>
                             <property name="unchecked_bitmap"></property>
-                            <event name="OnMenuSelection">m_EngineExprtkOnMenuSelection</event>
+                            <event name="OnMenuSelection">m_EngineLuaOnMenuSelection</event>
                         </object>
                         <object class="wxMenuItem" expanded="0">
                             <property name="bitmap"></property>
@@ -618,12 +619,12 @@
                             <property name="help"></property>
                             <property name="id">wxID_ANY</property>
                             <property name="kind">wxITEM_RADIO</property>
-                            <property name="label">&amp;Lua</property>
-                            <property name="name">m_EngineLua</property>
+                            <property name="label">&amp;exprtk</property>
+                            <property name="name">m_EngineExprtk</property>
                             <property name="permission">protected</property>
-                            <property name="shortcut">Alt+Shift+L</property>
+                            <property name="shortcut">Alt+Shift+E</property>
                             <property name="unchecked_bitmap"></property>
-                            <event name="OnMenuSelection">m_EngineLuaOnMenuSelection</event>
+                            <event name="OnMenuSelection">m_EngineExprtkOnMenuSelection</event>
                         </object>
                     </object>
                     <object class="wxMenuItem" expanded="1">
@@ -664,7 +665,7 @@
                         <property name="label">Clear &amp;History</property>
                         <property name="name">m_ClearHistory</property>
                         <property name="permission">none</property>
-                        <property name="shortcut">Ctrl+D</property>
+                        <property name="shortcut">Ctrl+Alt+L</property>
                         <property name="unchecked_bitmap"></property>
                         <event name="OnMenuSelection">m_ClearHistoryOnMenuSelection</event>
                     </object>

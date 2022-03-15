@@ -33,7 +33,7 @@ class RealMainFrame: public MainFrame
   symtable_t       m_Symbols;
   std::string      m_ResultString;
   wxString         m_PreviousExpr = "";
-  EvaluationEngine m_Engine = EvaluationEngine::Exprtk;
+  EvaluationEngine m_Engine = EvaluationEngine::Lua;
   lua_State*       L = nullptr;
 
 public:
@@ -41,6 +41,9 @@ public:
     m_Symbols.add_constants();
     toggleHistory();
     initLua();
+#ifdef __WXMSW__
+    SetIcon(wxIcon(wxT("Icon")));
+#endif
   }
   ~RealMainFrame() {
     lua_close(L);
@@ -91,6 +94,15 @@ end)");
     m_ExprInput->SetValue(wxT(""));
     m_Result->SetValue(wxT(""));
     m_ResultString = "";
+  }
+
+  void m_ResultOnChar(wxKeyEvent& evt) override {
+    if (evt.GetModifiers()==0) {
+      m_ExprInput->SetFocus();
+      //m_ExprInput->OnChar(evt); // TODO
+    } else {
+      m_Result->OnChar(evt);
+    }
   }
 
   void m_HistoryListOnListBoxDClick(wxCommandEvent& evt) override {
@@ -148,6 +160,8 @@ end)");
     if (wxexprstr != m_PreviousExpr)
       m_HistoryList->InsertItems(1, &wxexprstr, 0);
     m_PreviousExpr = std::move(wxexprstr);
+    m_ExprInput->SetFocus();
+    m_ExprInput->SelectAll();
   }
   std::string evalExprtk(std::string const& input)
   {
@@ -181,15 +195,20 @@ end)");
     lua_pushglobaltable(L);
     lua_getfield(L, -1, "__printbuf");
     printed_txt = lua_tolstring(L, -1, &printed_len);
-    lua_pop(L, 1);
-    for (int i=1, n=lua_gettop(L); i<=n; ++i) {
-      size_t slen = 0;
-      char const* s = lua_tolstring(L, i, &slen);
-      if (i>1)
-        out+="\t";
-      out+=std::string(s, s+slen);
+    lua_pop(L, 2);
+    if (int n=lua_gettop(L)) {
+      for (int i=1; i<=n; ++i) {
+        if (i>1)
+          out+="\t";
+        size_t slen = 0;
+        char const* s = luaL_tolstring(L, i, &slen);
+        out+=std::string(s, s+slen);
+        lua_pop(L, 1);
+      }
+      lua_pop(L, n);
+    } else {
+      out += "nil";
     }
-    lua_pop(L, lua_gettop(L));
     static const std::string iprompt1 = "lua> ";
     static const std::string iprompt2 = "------ lua code ------\n";
     static const std::string oprompt1 = "\n---> ";
@@ -198,8 +217,8 @@ end)");
     if (printed_len>0)
       prt = "\n------ prints ------\n" + std::string(printed_txt, printed_txt+printed_len); 
     return (input.find('\n')==std::string::npos?iprompt1:iprompt2) + input +
-           prt +
-           (  out.find('\n')==std::string::npos?oprompt1:oprompt2) + out;
+           (  out.find('\n')==std::string::npos?oprompt1:oprompt2) + out +
+           prt;
   }
 };
 
