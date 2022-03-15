@@ -113,6 +113,15 @@ end)");
   void m_AboutOnMenuSelection(wxCommandEvent& evt) override {
     (new AboutDialog(this))->Show(true);
   }
+  void m_StayOnTopOnMenuSelection(wxCommandEvent& evt) override {
+    bool stayOnTop = m_StayOnTop->IsChecked();
+    auto style = GetWindowStyle();
+    if (stayOnTop)
+      style |= wxSTAY_ON_TOP;
+    else
+      style &= ~wxSTAY_ON_TOP;
+    SetWindowStyle(style);
+  }
 
   void m_ExecuteButtonOnButtonClick(wxCommandEvent& evt) override {
     evalExpr();

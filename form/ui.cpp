@@ -36,7 +36,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	m_ResultSizer = new wxBoxSizer( wxHORIZONTAL );
 
-	m_Result = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE );
+	m_Result = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY );
 	m_ResultSizer->Add( m_Result, 3, wxALL|wxEXPAND, 0 );
 
 	m_ToggleHistory = new wxButton( this, wxID_ANY, wxT(">"), wxDefaultPosition, wxSize( 16,-1 ), 0 );
@@ -116,6 +116,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	m_ClearResult->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ClearResultOnButtonClick ), NULL, this );
 	m_ToggleHistory->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( MainFrame::m_ToggleHistoryOnButtonClick ), NULL, this );
 	m_HistoryList->Connect( wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, wxCommandEventHandler( MainFrame::m_HistoryListOnListBoxDClick ), NULL, this );
+	m_Window->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_StayOnTopOnMenuSelection ), this, m_StayOnTop->GetId());
 	m_Window->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_MenuToggleHistoryOnMenuSelection ), this, m_MenuToggleHistory->GetId());
 	m_Window->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_NewWindowOnMenuSelection ), this, m_NewWindow->GetId());
 	m_Window->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_CloseWindowOnMenuSelection ), this, m_CloseWindow->GetId());

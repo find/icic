@@ -60,6 +60,7 @@ class MainFrame : public wxFrame
 		virtual void m_ClearResultOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ToggleHistoryOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_HistoryListOnListBoxDClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_StayOnTopOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_MenuToggleHistoryOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_NewWindowOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_CloseWindowOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
