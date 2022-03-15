@@ -3,7 +3,7 @@
     <FileVersion major="1" minor="16" />
     <object class="Project" expanded="1">
         <property name="class_decoration">; </property>
-        <property name="code_generation">C++|Lua</property>
+        <property name="code_generation">C++</property>
         <property name="disconnect_events">1</property>
         <property name="disconnect_mode">source_name</property>
         <property name="disconnect_php_events">0</property>
@@ -11,13 +11,13 @@
         <property name="embedded_files_path">res</property>
         <property name="encoding">UTF-8</property>
         <property name="event_generation">connect</property>
-        <property name="file">calcui</property>
+        <property name="file">ui</property>
         <property name="first_id">1000</property>
         <property name="help_provider">none</property>
         <property name="image_path_wrapper_function_name"></property>
         <property name="indent_with_spaces"></property>
         <property name="internationalize">0</property>
-        <property name="name">calcui</property>
+        <property name="name">ui</property>
         <property name="namespace"></property>
         <property name="path">.</property>
         <property name="precompiled_header"></property>

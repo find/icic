@@ -11,7 +11,7 @@ target('lua')
 
 target('gui-calc')
   set_kind('binary')
-  add_files('form/calcui.cpp')
+  add_files('form/ui.cpp')
   add_files('main.cpp')
   add_includedirs('lua')
   add_deps('lua')
