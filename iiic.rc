@@ -1,0 +1,10 @@
+#include <windows.h>
+#include <sdkddkver.h>
+
+// Manifest
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "iiic.exe.manifest"
+
+// Icon
+Icon ICON "if.ico"
+
+
