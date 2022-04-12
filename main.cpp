@@ -236,8 +236,9 @@ exception:
     static const std::string iprompt2 = "------ js code ------\n";
     static const std::string oprompt1 = "\n";
     static const std::string oprompt2 = "\n------ returns ------ \n";
-    return (input.find('\n')==std::string::npos?iprompt1:iprompt2) + input +
-           (  str.find('\n')==std::string::npos?oprompt1:oprompt2) + str;
+    bool input_singleline = input.find('\n')==std::string::npos;
+    return (input_singleline?iprompt1:iprompt2) + input +
+           ((input_singleline&&str.find('\n')==std::string::npos)?oprompt1:oprompt2) + str;
   }
   std::string evalLua(std::string const& input)
   {
@@ -281,11 +282,12 @@ exception:
     static const std::string iprompt2 = "------ lua code ------\n";
     static const std::string oprompt1 = "\n";
     static const std::string oprompt2 = "\n------ returns ------ \n";
+    bool input_singleline = input.find('\n')==std::string::npos;
     std::string prt = "";
     if (printed_len>0)
       prt = "\n------ prints ------\n" + std::string(printed_txt, printed_txt+printed_len); 
-    return (input.find('\n')==std::string::npos?iprompt1:iprompt2) + input +
-           (  out.find('\n')==std::string::npos?oprompt1:oprompt2) + out +
+    return (input_singleline?iprompt1:iprompt2) + input +
+           ((input_singleline&&out.find('\n')==std::string::npos)?oprompt1:oprompt2) + out +
            prt;
   }
 };
