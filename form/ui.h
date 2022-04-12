@@ -52,7 +52,7 @@ class MainFrame : public wxFrame
 		wxMenu* m_EditMenu;
 		wxMenu* m_EvalEngine;
 		wxMenuItem* m_EngineLua;
-		wxMenuItem* m_EngineExprtk;
+		wxMenuItem* m_EngineQuickJS;
 		wxMenu* m_HelpMenu;
 
 		// Virtual event handlers, override them in your derived class
@@ -66,7 +66,7 @@ class MainFrame : public wxFrame
 		virtual void m_NewWindowOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_CloseWindowOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_EngineLuaOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
-		virtual void m_EngineExprtkOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_EngineQuickJSOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_MenuEvalOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ClearOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ClearHistoryOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }

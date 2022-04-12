@@ -5,11 +5,18 @@ extern "C" {
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+#include "quickjs.h"
+
+// defined in qjscalc.c
+const char*  qjscalc_src();
+const size_t qjscalc_src_len();
 }
-#include "exprtk.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <fstream>
+
+
 
 using Real = double;
 
@@ -20,33 +27,35 @@ static void* _myLuaAlloc(void*, void* ptr, size_t osize, size_t nsize)
 
 class RealMainFrame: public MainFrame
 {
-  using parser_t = exprtk::parser<Real>;
-  using symtable_t = exprtk::symbol_table<Real>;
-  using expr_t = exprtk::expression<Real>;
-
   enum class EvaluationEngine {
-    Exprtk,
+    QuickJS,
     Lua
   };
 
   bool             m_DrawerShown = true;
-  symtable_t       m_Symbols;
   std::string      m_ResultString;
   wxString         m_PreviousExpr = "";
   EvaluationEngine m_Engine = EvaluationEngine::Lua;
   lua_State*       L = nullptr;
+  JSRuntime*       rt = nullptr;
+  JSContext*       ctx = nullptr;
+  std::string      jserr = "";
 
 public:
   RealMainFrame(): MainFrame(nullptr) {
-    m_Symbols.add_constants();
     toggleHistory();
     initLua();
+    initQJS();
 #ifdef __WXMSW__
     SetIcon(wxIcon(wxT("Icon")));
 #endif
   }
   ~RealMainFrame() {
     lua_close(L);
+    if (ctx)
+      JS_FreeContext(ctx);
+    if (rt)
+      JS_FreeRuntime(rt);
   }
   void initLua() {
     if (L)
@@ -62,6 +71,47 @@ print = function(...)
     __printbuf = __printbuf .. tostring(select(i,...)) .. (i<n and '\t' or '\n')
   end
 end)");
+  }
+  static JSContext* newJSContext(JSRuntime* rt) {
+    JSContext* ctx = JS_NewContext(rt);
+    JS_AddIntrinsicBigFloat(ctx);
+    JS_AddIntrinsicBigDecimal(ctx);
+    JS_AddIntrinsicOperators(ctx);
+    JS_EnableBignumExt(ctx, true);
+    return ctx;
+  }
+  void js_std_eval_binary(JSContext *ctx, const uint8_t *buf, size_t buf_len) {
+    JSValue obj, val;
+    obj = JS_ReadObject(ctx, buf, buf_len, JS_READ_OBJ_BYTECODE);
+    if (JS_IsException(obj))
+      goto exception;
+    val = JS_EvalFunction(ctx, obj);
+    if (JS_IsException(val)) {
+      goto exception;
+    }
+    JS_FreeValue(ctx, val);
+    return;
+exception:
+    //js_std_dump_error(ctx);
+    JSValue e = JS_GetException(ctx);
+    char const* msg = JS_ToCString(ctx, e);
+    jserr = msg;
+    JS_FreeCString(ctx, msg);
+    JS_FreeValue(ctx, e);
+  }
+  void initQJS() {
+    if (rt && ctx) {
+      JS_FreeContext(ctx);
+      JS_FreeRuntime(rt);
+    }
+    rt = JS_NewRuntime();
+    //js_std_set_worker_new_context_func(newJSContext);
+    //js_std_init_handlers(rt);
+    ctx = newJSContext(rt);
+    //JS_SetModuleLoaderFunc(rt, nullptr, js_modeule_loader, nullptr);
+    //js_std_eval_binary(ctx, qjsc_qjscalc, qjsc_qjscalc_size);
+    if (qjscalc_src_len()>0)
+      evalQuickJSRaw(std::string(qjscalc_src(), qjscalc_src()+qjscalc_src_len()), "qjscalc");
   }
 
   void toggleHistory() {
@@ -80,8 +130,8 @@ end)");
   void m_EngineLuaOnMenuSelection(wxCommandEvent& evt) override {
     m_Engine = EvaluationEngine::Lua;
   }
-  void m_EngineExprtkOnMenuSelection(wxCommandEvent& evt) override {
-    m_Engine = EvaluationEngine::Exprtk;
+  void m_EngineQuickJSOnMenuSelection(wxCommandEvent& evt) override {
+    m_Engine = EvaluationEngine::QuickJS;
   }
 
   void m_ClearResultOnButtonClick(wxCommandEvent& evt) override {
@@ -114,6 +164,7 @@ end)");
   void m_ClearHistoryOnMenuSelection(wxCommandEvent& evt) override {
     m_HistoryList->Clear();
     initLua();
+    initQJS();
   }
 
   void m_NewWindowOnMenuSelection(wxCommandEvent& evt) override {
@@ -148,8 +199,8 @@ end)");
       return;
 
     std::string res;
-    if (m_Engine == EvaluationEngine::Exprtk)
-      res = evalExprtk(exprstr);
+    if (m_Engine == EvaluationEngine::QuickJS)
+      res = evalQuickJS(exprstr);
     else
       res = evalLua(exprstr);
 
@@ -163,13 +214,30 @@ end)");
     m_ExprInput->SetFocus();
     m_ExprInput->SelectAll();
   }
-  std::string evalExprtk(std::string const& input)
-  {
-    expr_t expr;
-    expr.register_symbol_table(m_Symbols);
-    parser_t parser;
-    parser.compile(input, expr);
-    return input + " = " + std::to_string(expr.value());
+  std::string evalQuickJSRaw(std::string const& input, std::string const& file="<input>") {
+    if (!jserr.empty())
+      return jserr;
+    JSValue val = JS_Eval(ctx, input.c_str(), input.size(), file.c_str(), 0);
+    if (JS_IsException(val)) {
+      val = JS_GetException(ctx);
+    }
+    const char* jstr;
+    jstr = JS_ToCString(ctx, val);
+    std::string str = jstr;
+    JS_FreeValue(ctx, val);
+    JS_FreeCString(ctx, jstr);
+    return str;
+  }
+
+  std::string evalQuickJS(std::string const& input) {
+    auto str = evalQuickJSRaw("\"use math\"; void 0; " + input);
+
+    static const std::string iprompt1 = "qjs> ";
+    static const std::string iprompt2 = "------ js code ------\n";
+    static const std::string oprompt1 = "\n";
+    static const std::string oprompt2 = "\n------ returns ------ \n";
+    return (input.find('\n')==std::string::npos?iprompt1:iprompt2) + input +
+           (  str.find('\n')==std::string::npos?oprompt1:oprompt2) + str;
   }
   std::string evalLua(std::string const& input)
   {
@@ -211,7 +279,7 @@ end)");
     }
     static const std::string iprompt1 = "lua> ";
     static const std::string iprompt2 = "------ lua code ------\n";
-    static const std::string oprompt1 = "\n---> ";
+    static const std::string oprompt1 = "\n";
     static const std::string oprompt2 = "\n------ returns ------ \n";
     std::string prt = "";
     if (printed_len>0)
@@ -235,5 +303,9 @@ public:
   }
 };
 
+#ifdef DEBUG
+wxIMPLEMENT_APP_CONSOLE(CalcApp);
+#else
 wxIMPLEMENT_APP(CalcApp);
+#endif
 

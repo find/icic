@@ -80,8 +80,8 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	m_EvalEngine->Append( m_EngineLua );
 	m_EngineLua->Check( true );
 
-	m_EngineExprtk = new wxMenuItem( m_EvalEngine, wxID_ANY, wxString( wxT("&exprtk") ) + wxT('\t') + wxT("Alt+Shift+E"), wxEmptyString, wxITEM_RADIO );
-	m_EvalEngine->Append( m_EngineExprtk );
+	m_EngineQuickJS = new wxMenuItem( m_EvalEngine, wxID_ANY, wxString( wxT("Quick&JS") ) + wxT('\t') + wxT("Alt+Shift+J"), wxEmptyString, wxITEM_RADIO );
+	m_EvalEngine->Append( m_EngineQuickJS );
 
 	m_EditMenu->Append( m_EvalEngineItem );
 
@@ -122,7 +122,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	m_Window->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_NewWindowOnMenuSelection ), this, m_NewWindow->GetId());
 	m_Window->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_CloseWindowOnMenuSelection ), this, m_CloseWindow->GetId());
 	m_EvalEngine->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_EngineLuaOnMenuSelection ), this, m_EngineLua->GetId());
-	m_EvalEngine->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_EngineExprtkOnMenuSelection ), this, m_EngineExprtk->GetId());
+	m_EvalEngine->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_EngineQuickJSOnMenuSelection ), this, m_EngineQuickJS->GetId());
 	m_EditMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_MenuEvalOnMenuSelection ), this, m_MenuEval->GetId());
 	m_EditMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_ClearOnMenuSelection ), this, m_Clear->GetId());
 	m_EditMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MainFrame::m_ClearHistoryOnMenuSelection ), this, m_ClearHistory->GetId());

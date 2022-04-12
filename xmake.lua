@@ -3,22 +3,41 @@ if is_plat('windows') then
   add_requires('vcpkg::libpng', {alias='libpng',system=true})
   add_requires('vcpkg::zlib', {alias='zlib',system=true})
 end
+if is_mode('debug') then
+  set_symbols('debug')
+end
 
 target('lua')
   set_kind('static')
   add_includedirs('lua')
   add_files('lua/*.c')
 
+target('quickjs')
+  set_kind('static')
+  add_includedirs('quickjs')
+  add_rules('utils.bin2c')
+  add_files('quickjs/*.c')
+  add_files('quickjs/*.js', {rules='utils.bin2c'})
+  add_defines('CONFIG_BIGNUM')
+  if is_mode('debug') then
+    add_defines('DUMP_LEAKS')
+  end
+
 target('iiic')
   set_kind('binary')
   set_optimize('minimal')
   add_files('form/ui.cpp')
   add_files('main.cpp')
-  add_includedirs('lua')
-  add_deps('lua')
+  add_includedirs('lua','quickjs')
+  add_deps('lua', 'quickjs')
   if is_plat('windows') then
     add_files('iiic.rc')
-    add_rules("win.sdk.application")
+    if is_mode('debug') and is_plat('windows') then
+      add_defines('DEBUG')
+      add_ldflags('-subsystem:console')
+    else
+      add_rules("win.sdk.application")
+    end
     add_packages('wx','libpng','zlib')
     add_cxflags('/bigobj')
     add_links('uuid','gdi32','comdlg32','comctl32','ws2_32','user32','winspool','ole32','rpcrt4','advapi32','shell32')
@@ -31,8 +50,8 @@ target('iiic')
     add_ldflags('-static')
     add_ldflags('-Wl,--subsystem,windows')
   end
-  --add_defines('UNICODE','_UNICODE','NDEBUG','wxMONOLITHIC=1','wxNO_GL_LIB=1')
 
+  --add_defines('UNICODE','_UNICODE','NDEBUG','wxMONOLITHIC=1','wxNO_GL_LIB=1')
   --if is_plat('windows') then
   --  add_includedirs('$(wxdir)/include/msvc')
   --  --add_includedirs('$(wxdir/vc_x64_lib/mswu')

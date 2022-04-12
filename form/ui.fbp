@@ -619,12 +619,12 @@
                             <property name="help"></property>
                             <property name="id">wxID_ANY</property>
                             <property name="kind">wxITEM_RADIO</property>
-                            <property name="label">&amp;exprtk</property>
-                            <property name="name">m_EngineExprtk</property>
+                            <property name="label">Quick&amp;JS</property>
+                            <property name="name">m_EngineQuickJS</property>
                             <property name="permission">protected</property>
-                            <property name="shortcut">Alt+Shift+E</property>
+                            <property name="shortcut">Alt+Shift+J</property>
                             <property name="unchecked_bitmap"></property>
-                            <event name="OnMenuSelection">m_EngineExprtkOnMenuSelection</event>
+                            <event name="OnMenuSelection">m_EngineQuickJSOnMenuSelection</event>
                         </object>
                     </object>
                     <object class="wxMenuItem" expanded="1">
