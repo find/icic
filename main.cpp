@@ -1,6 +1,8 @@
 #include "wx/wx.h"
 #include "form/ui.h"
 
+#include <stdlib.h>
+
 extern "C" {
 #include "lua.h"
 #include "lualib.h"
@@ -11,14 +13,6 @@ extern "C" {
 const char*  qjscalc_src();
 const size_t qjscalc_src_len();
 }
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <fstream>
-
-
-
-using Real = double;
 
 static void* _myLuaAlloc(void*, void* ptr, size_t osize, size_t nsize)
 {
@@ -35,14 +29,15 @@ class RealMainFrame: public MainFrame
   bool             m_DrawerShown = true;
   std::string      m_ResultString;
   wxString         m_PreviousExpr = "";
-  EvaluationEngine m_Engine = EvaluationEngine::Lua;
-  lua_State*       L = nullptr;
-  JSRuntime*       rt = nullptr;
-  JSContext*       ctx = nullptr;
-  std::string      jserr = "";
+  EvaluationEngine m_Engine = EvaluationEngine::QuickJS;
+  lua_State*       m_Lua = nullptr;
+  JSRuntime*       m_JsRuntime = nullptr;
+  JSContext*       m_JsContext = nullptr;
+  std::string      m_JsError = "";
 
 public:
   RealMainFrame(): MainFrame(nullptr) {
+    m_ToggleHistory->MoveAfterInTabOrder(m_ClearResult);
     toggleHistory();
     initLua();
     initQJS();
@@ -51,18 +46,18 @@ public:
 #endif
   }
   ~RealMainFrame() {
-    lua_close(L);
-    if (ctx)
-      JS_FreeContext(ctx);
-    if (rt)
-      JS_FreeRuntime(rt);
+    lua_close(m_Lua);
+    if (m_JsContext)
+      JS_FreeContext(m_JsContext);
+    if (m_JsRuntime)
+      JS_FreeRuntime(m_JsRuntime);
   }
   void initLua() {
-    if (L)
-      lua_close(L);
-    L = lua_newstate(_myLuaAlloc, nullptr);
-    luaL_openlibs(L);
-    luaL_dostring(L, R"(
+    if (m_Lua)
+      lua_close(m_Lua);
+    m_Lua = lua_newstate(_myLuaAlloc, nullptr);
+    luaL_openlibs(m_Lua);
+    luaL_dostring(m_Lua, R"(
 for i,v in pairs(math) do _G[i]=v end
 __printbuf = ''
 print = function(...)
@@ -72,53 +67,34 @@ print = function(...)
   end
 end)");
   }
-  static JSContext* newJSContext(JSRuntime* rt) {
-    JSContext* ctx = JS_NewContext(rt);
+  static JSContext* newJSContext(JSRuntime* m_JsRuntime) {
+    JSContext* ctx = JS_NewContext(m_JsRuntime);
     JS_AddIntrinsicBigFloat(ctx);
     JS_AddIntrinsicBigDecimal(ctx);
     JS_AddIntrinsicOperators(ctx);
     JS_EnableBignumExt(ctx, true);
     return ctx;
   }
-  void js_std_eval_binary(JSContext *ctx, const uint8_t *buf, size_t buf_len) {
-    JSValue obj, val;
-    obj = JS_ReadObject(ctx, buf, buf_len, JS_READ_OBJ_BYTECODE);
-    if (JS_IsException(obj))
-      goto exception;
-    val = JS_EvalFunction(ctx, obj);
-    if (JS_IsException(val)) {
-      goto exception;
-    }
-    JS_FreeValue(ctx, val);
-    return;
-exception:
-    //js_std_dump_error(ctx);
-    JSValue e = JS_GetException(ctx);
-    char const* msg = JS_ToCString(ctx, e);
-    jserr = msg;
-    JS_FreeCString(ctx, msg);
-    JS_FreeValue(ctx, e);
-  }
   void initQJS() {
-    if (rt && ctx) {
-      JS_FreeContext(ctx);
-      JS_FreeRuntime(rt);
+    if (m_JsRuntime && m_JsContext) {
+      JS_FreeContext(m_JsContext);
+      JS_FreeRuntime(m_JsRuntime);
     }
-    rt = JS_NewRuntime();
+    m_JsRuntime = JS_NewRuntime();
     //js_std_set_worker_new_context_func(newJSContext);
-    //js_std_init_handlers(rt);
-    ctx = newJSContext(rt);
-    //JS_SetModuleLoaderFunc(rt, nullptr, js_modeule_loader, nullptr);
-    //js_std_eval_binary(ctx, qjsc_qjscalc, qjsc_qjscalc_size);
+    //js_std_init_handlers(m_JsRuntime);
+    m_JsContext = newJSContext(m_JsRuntime);
+    //JS_SetModuleLoaderFunc(m_JsRuntime, nullptr, js_modeule_loader, nullptr);
     if (qjscalc_src_len()>0)
       evalQuickJSRaw(std::string(qjscalc_src(), qjscalc_src()+qjscalc_src_len()), "qjscalc");
   }
 
   void toggleHistory() {
     m_DrawerShown = !m_DrawerShown;
-    m_ResultSizer->Show(m_HistoryList, m_DrawerShown);
-    m_ToggleHistory->SetLabel(m_DrawerShown?">":"<");
-    m_ResultSizer->Layout();
+    m_HistorySizer->Show(m_HistoryList, m_DrawerShown);
+    m_HistorySizer->Layout();
+    m_InputPanelLayout->Layout();
+    m_ExprInput->SetFocus();
   }
   void m_ToggleHistoryOnButtonClick(wxCommandEvent& evt) override {
     toggleHistory();
@@ -215,17 +191,17 @@ exception:
     m_ExprInput->SelectAll();
   }
   std::string evalQuickJSRaw(std::string const& input, std::string const& file="<input>") {
-    if (!jserr.empty())
-      return jserr;
-    JSValue val = JS_Eval(ctx, input.c_str(), input.size(), file.c_str(), 0);
+    if (!m_JsError.empty())
+      return m_JsError;
+    JSValue val = JS_Eval(m_JsContext, input.c_str(), input.size(), file.c_str(), 0);
     if (JS_IsException(val)) {
-      val = JS_GetException(ctx);
+      val = JS_GetException(m_JsContext);
     }
     const char* jstr;
-    jstr = JS_ToCString(ctx, val);
+    jstr = JS_ToCString(m_JsContext, val);
     std::string str = jstr;
-    JS_FreeValue(ctx, val);
-    JS_FreeCString(ctx, jstr);
+    JS_FreeValue(m_JsContext, val);
+    JS_FreeCString(m_JsContext, jstr);
     return str;
   }
 
@@ -243,38 +219,38 @@ exception:
   std::string evalLua(std::string const& input)
   {
     std::string out;
-    //luaL_dostring(L, input.c_str());
+    //luaL_dostring(m_Lua, input.c_str());
     std::string addReturn = "return " + input;
-    auto status = luaL_loadbuffer(L, addReturn.c_str(), addReturn.size(), "=input");
+    auto status = luaL_loadbuffer(m_Lua, addReturn.c_str(), addReturn.size(), "=input");
     if (status == LUA_ERRSYNTAX) {
-      lua_pop(L, 1);
-      status = luaL_loadbuffer(L, input.c_str(), input.size(), "=input");
+      lua_pop(m_Lua, 1);
+      status = luaL_loadbuffer(m_Lua, input.c_str(), input.size(), "=input");
     }
     if (status == LUA_OK) {
-      lua_pushglobaltable(L);
-      lua_pushliteral(L, "");
-      lua_setfield(L, -2, "__printbuf");
-      lua_pop(L,1);
-      status = lua_pcall(L, 0, LUA_MULTRET, 0);
+      lua_pushglobaltable(m_Lua);
+      lua_pushliteral(m_Lua, "");
+      lua_setfield(m_Lua, -2, "__printbuf");
+      lua_pop(m_Lua,1);
+      status = lua_pcall(m_Lua, 0, LUA_MULTRET, 0);
     }
     if (status != LUA_OK)
       out += "ERROR\n";
     size_t printed_len = 0;
     char const*  printed_txt = nullptr;
-    lua_pushglobaltable(L);
-    lua_getfield(L, -1, "__printbuf");
-    printed_txt = lua_tolstring(L, -1, &printed_len);
-    lua_pop(L, 2);
-    if (int n=lua_gettop(L)) {
+    lua_pushglobaltable(m_Lua);
+    lua_getfield(m_Lua, -1, "__printbuf");
+    printed_txt = lua_tolstring(m_Lua, -1, &printed_len);
+    lua_pop(m_Lua, 2);
+    if (int n=lua_gettop(m_Lua)) {
       for (int i=1; i<=n; ++i) {
         if (i>1)
           out+="\t";
         size_t slen = 0;
-        char const* s = luaL_tolstring(L, i, &slen);
+        char const* s = luaL_tolstring(m_Lua, i, &slen);
         out+=std::string(s, s+slen);
-        lua_pop(L, 1);
+        lua_pop(m_Lua, 1);
       }
-      lua_pop(L, n);
+      lua_pop(m_Lua, n);
     } else {
       out += "nil";
     }

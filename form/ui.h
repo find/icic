@@ -19,8 +19,10 @@
 #include <wx/bitmap.h>
 #include <wx/image.h>
 #include <wx/icon.h>
-#include <wx/sizer.h>
 #include <wx/listbox.h>
+#include <wx/sizer.h>
+#include <wx/panel.h>
+#include <wx/splitter.h>
 #include <wx/menu.h>
 #include <wx/frame.h>
 #include <wx/stattext.h>
@@ -38,35 +40,39 @@ class MainFrame : public wxFrame
 
 	protected:
 		wxFlexGridSizer* m_MainLayout;
-		wxBoxSizer* m_InputLineLayout;
+		wxSplitterWindow* m_WindowSplitter;
+		wxPanel* m_InputPanel;
+		wxBoxSizer* m_InputPanelLayout;
+		wxBoxSizer* m_HistorySizer;
 		wxTextCtrl* m_ExprInput;
-		wxButton* m_ExecuteButton;
-		wxButton* m_ClearResult;
-		wxBoxSizer* m_ResultSizer;
-		wxTextCtrl* m_Result;
 		wxButton* m_ToggleHistory;
 		wxListBox* m_HistoryList;
+		wxButton* m_ExecuteButton;
+		wxButton* m_ClearResult;
+		wxPanel* m_OutputPanel;
+		wxBoxSizer* m_ResultSizer;
+		wxTextCtrl* m_Result;
 		wxMenuBar* m_MainMenuBar;
 		wxMenu* m_Window;
 		wxMenuItem* m_StayOnTop;
 		wxMenu* m_EditMenu;
 		wxMenu* m_EvalEngine;
-		wxMenuItem* m_EngineLua;
 		wxMenuItem* m_EngineQuickJS;
+		wxMenuItem* m_EngineLua;
 		wxMenu* m_HelpMenu;
 
 		// Virtual event handlers, override them in your derived class
+		virtual void m_ToggleHistoryOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_HistoryListOnListBoxDClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ExecuteButtonOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ClearResultOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ResultOnChar( wxKeyEvent& event ) { event.Skip(); }
-		virtual void m_ToggleHistoryOnButtonClick( wxCommandEvent& event ) { event.Skip(); }
-		virtual void m_HistoryListOnListBoxDClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_StayOnTopOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_MenuToggleHistoryOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_NewWindowOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_CloseWindowOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
-		virtual void m_EngineLuaOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_EngineQuickJSOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
+		virtual void m_EngineLuaOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_MenuEvalOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ClearOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
 		virtual void m_ClearHistoryOnMenuSelection( wxCommandEvent& event ) { event.Skip(); }
@@ -79,6 +85,12 @@ class MainFrame : public wxFrame
 
 		~MainFrame();
 
+		void m_WindowSplitterOnIdle( wxIdleEvent& )
+		{
+			m_WindowSplitter->SetSashPosition( 100 );
+			m_WindowSplitter->Disconnect( wxEVT_IDLE, wxIdleEventHandler( MainFrame::m_WindowSplitterOnIdle ), NULL, this );
+		}
+
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -89,6 +101,7 @@ class AboutDialog : public wxDialog
 	private:
 
 	protected:
+		wxStaticText* m_staticText31;
 
 	public:
 
