@@ -1,12 +1,12 @@
 # A Ergonomic Calculator
 
-A confortable-to-use calculator with [QuickJS](https://bellard.org/quickjs/) and [Lua](https://lua.org/) at its core, and a minimalist old school GUI:
+A confortable-to-use calculator with [QuickJS](https://bellard.org/quickjs/) and [Lua](https://lua.org/) at its core, and a minimal old-school GUI:
 
 ![screenshot](form/ui.png)
 
 ## Features
 
-* Lightweight & standalone
+* Lightweight, standalone, single executable
 * Instant startup
 * Fully keyboard driven
 * Big integers, fractions, arbitrary precision floating point operations, powered by QuickJS
