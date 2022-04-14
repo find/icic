@@ -50,7 +50,7 @@
             <property name="size">622,301</property>
             <property name="style">wxDEFAULT_FRAME_STYLE|wxSYSTEM_MENU</property>
             <property name="subclass">; ; forward_declare</property>
-            <property name="title">Caculator</property>
+            <property name="title">IF&apos;s Calculator</property>
             <property name="tooltip"></property>
             <property name="two_step_creation">0</property>
             <property name="window_extra_style"></property>

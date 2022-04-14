@@ -23,7 +23,7 @@ target('quickjs')
     add_defines('DUMP_LEAKS')
   end
 
-target('iiic')
+target('icic')
   set_kind('binary')
   set_optimize('minimal')
   add_files('form/ui.cpp')
@@ -31,8 +31,8 @@ target('iiic')
   add_includedirs('lua','quickjs')
   add_deps('lua', 'quickjs')
   if is_plat('windows') then
-    add_files('iiic.rc')
-    if is_mode('debug') and is_plat('windows') then
+    add_files('icic.rc')
+    if is_mode('debug') then
       add_defines('DEBUG')
       add_ldflags('-subsystem:console')
     else

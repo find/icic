@@ -2,7 +2,7 @@
 #include <sdkddkver.h>
 
 // Manifest
-CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "iiic.exe.manifest"
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "icic.exe.manifest"
 
 // Icon
 Icon ICON "if.ico"

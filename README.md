@@ -1,6 +1,8 @@
-# A Ergonomic Calculator
+# ICIC
 
-A confortable-to-use calculator with [QuickJS](https://bellard.org/quickjs/) and [Lua](https://lua.org/) at its core, and a minimal old-school GUI:
+ICIC reads _I see, I see_
+
+ICIC is a confortable ergonomic calculator with [QuickJS](https://bellard.org/quickjs/) and [Lua](https://lua.org/) at its core, and a minimal old-school GUI:
 
 ![screenshot](form/ui.png)
 
@@ -21,7 +23,7 @@ A confortable-to-use calculator with [QuickJS](https://bellard.org/quickjs/) and
 | Ctrl+N      | New Window           |
 | Ctrl+Q      | Quit                 |
 | Ctrl+T      | Toggle Stay On Top   |
-| Alt+Shift+J | Use QuickJs          |
+| Alt+Shift+J | Use QuickJS          |
 | Alt+Shift+L | Use Lua              |
 
 ## Why Yet Another Calculator

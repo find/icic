@@ -81,7 +81,7 @@ class MainFrame : public wxFrame
 
 	public:
 
-		MainFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Caculator"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 622,301 ), long style = wxDEFAULT_FRAME_STYLE|wxSYSTEM_MENU|wxTAB_TRAVERSAL, const wxString& name = wxT("Calculator") );
+		MainFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("IF's Calculator"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 622,301 ), long style = wxDEFAULT_FRAME_STYLE|wxSYSTEM_MENU|wxTAB_TRAVERSAL, const wxString& name = wxT("Calculator") );
 
 		~MainFrame();
 
