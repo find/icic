@@ -197,11 +197,12 @@ end)");
     if (JS_IsException(val)) {
       val = JS_GetException(m_JsContext);
     }
-    const char* jstr;
-    jstr = JS_ToCString(m_JsContext, val);
-    std::string str = jstr;
+    std::string str = "";
+    if (const char* jstr = JS_ToCString(m_JsContext, val)) {
+      str = jstr;
+      JS_FreeCString(m_JsContext, jstr);
+    }
     JS_FreeValue(m_JsContext, val);
-    JS_FreeCString(m_JsContext, jstr);
     return str;
   }
 
