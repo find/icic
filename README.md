@@ -2,7 +2,7 @@
 
 ICIC reads _I see, I see_
 
-ICIC is a confortable ergonomic calculator with [QuickJS](https://bellard.org/quickjs/) and [Lua](https://lua.org/) at its core, and a minimal old-school GUI:
+ICIC is a comfortable ergonomic calculator with [QuickJS](https://bellard.org/quickjs/) and [Lua](https://lua.org/) at its core, and a minimal old-school GUI:
 
 ![screenshot](form/ui.png)
 
