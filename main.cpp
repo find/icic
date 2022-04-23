@@ -1,6 +1,7 @@
 #include "wx/wx.h"
 #include "form/ui.h"
 
+#include <set>
 #include <stdlib.h>
 
 extern "C" {
@@ -19,6 +20,8 @@ static void* _myLuaAlloc(void*, void* ptr, size_t osize, size_t nsize)
   return realloc(ptr, nsize);
 }
 
+static constexpr int HotKey_BringToFront = 1;
+
 class RealMainFrame: public MainFrame
 {
   enum class EvaluationEngine {
@@ -35,7 +38,14 @@ class RealMainFrame: public MainFrame
   JSContext*       m_JsContext = nullptr;
   std::string      m_JsError = "";
 
+  static RealMainFrame* s_HotkeyHandler;
+
 public:
+  static std::set<RealMainFrame*>& allFrames() {
+    static std::set<RealMainFrame*> frames_;
+    return frames_;
+  }
+
   RealMainFrame(): MainFrame(nullptr) {
     m_ToggleHistory->MoveAfterInTabOrder(m_ClearResult);
     toggleHistory();
@@ -43,7 +53,12 @@ public:
     initQJS();
 #ifdef __WXMSW__
     SetIcon(wxIcon(wxT("Icon")));
+    if (s_HotkeyHandler == nullptr) {
+      RegisterHotKey(HotKey_BringToFront, wxMOD_CONTROL | wxMOD_ALT, 'I');
+      s_HotkeyHandler = this;
+    }
 #endif
+    allFrames().insert(this);
   }
   ~RealMainFrame() {
     lua_close(m_Lua);
@@ -51,7 +66,19 @@ public:
       JS_FreeContext(m_JsContext);
     if (m_JsRuntime)
       JS_FreeRuntime(m_JsRuntime);
+    if (s_HotkeyHandler==this) {
+      UnregisterHotKey(HotKey_BringToFront);
+      for(auto* frame: allFrames()) {
+        if (frame!=this) {
+          frame->RegisterHotKey(HotKey_BringToFront, wxMOD_CONTROL | wxMOD_ALT, 'I');
+          s_HotkeyHandler = frame;
+          break;
+        }
+      }
+    }
+    allFrames().erase(this);
   }
+
   void initLua() {
     if (m_Lua)
       lua_close(m_Lua);
@@ -268,9 +295,11 @@ end)");
            prt;
   }
 };
+RealMainFrame* RealMainFrame::s_HotkeyHandler = nullptr;
 
 class CalcApp : public wxApp
 {
+  wxDECLARE_EVENT_TABLE();
 public:
   bool OnInit() override
   {
@@ -280,7 +309,17 @@ public:
     Frame->Show(true);
     return true;
   }
+  void bringWindowsToFront(wxKeyEvent& evt) {
+    for (auto* frame: RealMainFrame::allFrames()) {
+      frame->Restore();
+      frame->Raise();
+    }
+  }
 };
+
+wxBEGIN_EVENT_TABLE(CalcApp, wxApp)
+  EVT_HOTKEY(HotKey_BringToFront, CalcApp::bringWindowsToFront)
+wxEND_EVENT_TABLE()
 
 #ifdef DEBUG
 wxIMPLEMENT_APP_CONSOLE(CalcApp);
