@@ -41,7 +41,7 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	m_ToggleHistory = new wxButton( m_InputPanel, wxID_ANY, wxT("History"), wxDefaultPosition, wxSize( -1,10 ), 0 );
 	m_ToggleHistory->SetFont( wxFont( 6, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxEmptyString ) );
-	m_ToggleHistory->SetToolTip( wxT("Toggle History Window") );
+	m_ToggleHistory->SetToolTip( wxT("Toggle History Window (Ctrl + H)") );
 
 	m_HistorySizer->Add( m_ToggleHistory, 0, wxALL|wxEXPAND, 0 );
 
@@ -57,10 +57,13 @@ MainFrame::MainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	m_ExecuteButton->SetDefault();
 	m_ExecuteButton->SetFont( wxFont( 22, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxEmptyString ) );
+	m_ExecuteButton->SetToolTip( wxT("Ctrl + Enter") );
 
 	m_InputLineLayout->Add( m_ExecuteButton, 1, wxALL|wxEXPAND, 0 );
 
 	m_ClearResult = new wxButton( m_InputPanel, wxID_ANY, wxT("&Clear"), wxDefaultPosition, wxSize( 40,-1 ), 0 );
+	m_ClearResult->SetToolTip( wxT("Ctrl + L") );
+
 	m_InputLineLayout->Add( m_ClearResult, 1, wxALL|wxEXPAND, 0 );
 
 
